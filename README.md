@@ -24,6 +24,17 @@ $ serve
 
 Click! http://localhost:9000
 
+### Usage of Serve
+
+```shell
+$ serve -h
+usage of serve:
+  -d string
+    	directory to serve (default ".")
+  -p int
+    	port to listen on (default 9000)
+```
+
 ## Key Features
 
 - Serving directory to http.
