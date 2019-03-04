@@ -37,14 +37,10 @@ func absPath(path string) (string, error) {
 	return path, nil
 }
 
-func newHasStatusCodeResponseWriter(w http.ResponseWriter) *hasStatusCodeResponseWriter {
-	return &hasStatusCodeResponseWriter{w, http.StatusOK}
-}
-
 func wrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("-> %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
-		hrw := newHasStatusCodeResponseWriter(w)
+		hrw := &hasStatusCodeResponseWriter{w, http.StatusOK}
 		wrappedHandler.ServeHTTP(hrw, r)
 
 		statusCode := hrw.statusCode
