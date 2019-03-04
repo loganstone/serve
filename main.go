@@ -4,9 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
+	"syscall"
 )
 
 const defaultDir = "."
@@ -48,6 +51,48 @@ func wrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
 	})
 }
 
+func isErrorAddressAlreadyInUse(err error) bool {
+	errOpError, ok := err.(*net.OpError)
+	if !ok {
+		return false
+	}
+	errSyscallError, ok := errOpError.Err.(*os.SyscallError)
+	if !ok {
+		return false
+	}
+	errErrno, ok := errSyscallError.Err.(syscall.Errno)
+	if !ok {
+		return false
+	}
+	if errErrno == syscall.EADDRINUSE {
+		return true
+	}
+	const WSAEADDRINUSE = 10048
+	if runtime.GOOS == "windows" && errErrno == WSAEADDRINUSE {
+		return true
+	}
+	return false
+}
+
+func run() {
+	addr := fmt.Sprintf(":%d", portToListen)
+
+	fileServerHandler := http.FileServer(http.Dir(dirToServe))
+
+	log.Printf("Serving [%s] on HTTP [%s]\n", dirToServe, addr)
+	err := http.ListenAndServe(addr, wrapHandlerWithLogging(fileServerHandler))
+
+	if err != nil {
+		if isErrorAddressAlreadyInUse(err) {
+			log.Println(err)
+			portToListen++
+			log.Printf("Change port: [%d]\n", portToListen)
+			run()
+		}
+		log.Fatal(err)
+	}
+}
+
 func init() {
 	flag.StringVar(&dirToServe, "d", defaultDir, "directory to serve")
 	flag.IntVar(&portToListen, "p", defaultPort, "port to listen on")
@@ -65,10 +110,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	addr := fmt.Sprintf(":%d", portToListen)
-
-	fileServerHandler := http.FileServer(http.Dir(dirToServe))
-
-	log.Printf("Serving [%s] on HTTP [%s]\n", dirToServe, addr)
-	log.Fatal(http.ListenAndServe(addr, wrapHandlerWithLogging(fileServerHandler)))
+	run()
 }
