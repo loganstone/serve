@@ -42,8 +42,8 @@ func TestAbsPath(t *testing.T) {
 }
 
 func TestRunServe(t *testing.T) {
-	dirToServe = "."
-	portToListen = 9000
+	dirToServe = defaultDir
+	portToListen = defaultPort
 
 	ts := newTestServer()
 
