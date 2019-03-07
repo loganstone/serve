@@ -74,13 +74,18 @@ func isErrorAddressAlreadyInUse(err error) bool {
 	return false
 }
 
+func newServer(addr string, handler http.Handler) *http.Server {
+	return &http.Server{Addr: addr, Handler: handler}
+}
+
 func run() {
 	addr := fmt.Sprintf(":%d", portToListen)
 
 	fileServerHandler := http.FileServer(http.Dir(dirToServe))
 
 	log.Printf("Serving [%s] on HTTP [%s]\n", dirToServe, addr)
-	err := http.ListenAndServe(addr, wrapHandlerWithLogging(fileServerHandler))
+	server := newServer(addr, wrapHandlerWithLogging(fileServerHandler))
+	err := server.ListenAndServe()
 
 	if err != nil {
 		if isErrorAddressAlreadyInUse(err) {
