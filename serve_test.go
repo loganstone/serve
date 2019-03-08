@@ -41,7 +41,7 @@ func TestAbsPath(t *testing.T) {
 	assert.Equal(t, actual, expected)
 }
 
-func TestRunServe(t *testing.T) {
+func TestRunServeAndReqeust(t *testing.T) {
 	dirToServe = defaultDir
 	portToListen = defaultPort
 
