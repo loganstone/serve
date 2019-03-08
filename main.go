@@ -74,19 +74,29 @@ func isErrorAddressAlreadyInUse(err error) bool {
 	return false
 }
 
-func newServer(addr string, handler http.Handler) *http.Server {
-	return &http.Server{Addr: addr, Handler: handler}
+func address() string {
+	return fmt.Sprintf(":%d", portToListen)
+}
+
+func newServer() *http.Server {
+	fileServerHandler := http.FileServer(http.Dir(dirToServe))
+	return &http.Server{Addr: address(), Handler: wrapHandlerWithLogging(fileServerHandler)}
 }
 
 func run() {
-	addr := fmt.Sprintf(":%d", portToListen)
+	dirToServe, err := absPath(dirToServe)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	fileServerHandler := http.FileServer(http.Dir(dirToServe))
+	if _, err := os.Stat(dirToServe); err != nil {
+		log.Fatal(err)
+	}
 
-	log.Printf("Serving [%s] on HTTP [%s]\n", dirToServe, addr)
-	server := newServer(addr, wrapHandlerWithLogging(fileServerHandler))
-	err := server.ListenAndServe()
+	server := newServer()
+	log.Printf("Serving [%s] on HTTP [%s]\n", dirToServe, address())
 
+	err = server.ListenAndServe()
 	if err != nil {
 		if isErrorAddressAlreadyInUse(err) {
 			log.Println(err)
@@ -105,15 +115,5 @@ func init() {
 
 func main() {
 	flag.Parse()
-
-	dirToServe, err := absPath(dirToServe)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err := os.Stat(dirToServe); err != nil {
-		log.Fatal(err)
-	}
-
 	run()
 }
