@@ -75,3 +75,16 @@ func TestRunServeAndReqeust(t *testing.T) {
 		assert.Assert(t, strings.Contains(actual, expected))
 	}
 }
+
+func TestIsErrorAddressAlreadyInUse(t *testing.T) {
+	dirToServe = defaultDir
+	portToListen = defaultPort
+
+	firstSrv := newTestServer()
+	firstSrv.Start()
+	defer firstSrv.Close()
+
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", portToListen))
+	assert.Assert(t, isErrorAddressAlreadyInUse(err))
+	assert.Equal(t, ln, nil)
+}
