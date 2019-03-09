@@ -56,11 +56,11 @@ func fileServerHandlerWithLogging() http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("-> %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+
 		hrw := &hasStatusCodeResponseWriter{w, http.StatusOK}
 		fileServerHandler.ServeHTTP(hrw, r)
 
-		statusCode := hrw.statusCode
-		log.Printf("<- %d %s\n", statusCode, http.StatusText(statusCode))
+		log.Printf("<- %d %s\n", hrw.statusCode, http.StatusText(hrw.statusCode))
 	})
 }
 
