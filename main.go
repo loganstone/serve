@@ -107,8 +107,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if _, err := os.Stat(absPath); err != nil {
+	dirInfo, err := os.Stat(absPath)
+	if err != nil {
 		log.Fatal(err)
+	}
+
+	if !dirInfo.IsDir() {
+		log.Fatal("-d option value must be directory")
 	}
 
 	dirToServe = absPath
