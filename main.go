@@ -28,29 +28,6 @@ func (w *hasStatusCodeResponseWriter) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
-func absPath(path string) (string, error) {
-	if filepath.IsAbs(path) {
-		return path, nil
-	}
-
-	path, err := filepath.Abs(path)
-	if err != nil {
-		return "", err
-	}
-	return path, nil
-}
-
-func wrapHandlerWithLogging(wrappedHandler http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("-> %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
-		hrw := &hasStatusCodeResponseWriter{w, http.StatusOK}
-		wrappedHandler.ServeHTTP(hrw, r)
-
-		statusCode := hrw.statusCode
-		log.Printf("<- %d %s\n", statusCode, http.StatusText(statusCode))
-	})
-}
-
 func isErrorAddressAlreadyInUse(err error) bool {
 	errOpError, ok := err.(*net.OpError)
 	if !ok {
@@ -74,29 +51,38 @@ func isErrorAddressAlreadyInUse(err error) bool {
 	return false
 }
 
-func address() string {
-	return fmt.Sprintf(":%d", portToListen)
+func fileServerHandlerWithLogging() http.Handler {
+	fileServerHandler := http.FileServer(http.Dir(dirToServe))
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("-> %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
+		hrw := &hasStatusCodeResponseWriter{w, http.StatusOK}
+		fileServerHandler.ServeHTTP(hrw, r)
+
+		statusCode := hrw.statusCode
+		log.Printf("<- %d %s\n", statusCode, http.StatusText(statusCode))
+	})
 }
 
 func newServer() *http.Server {
-	fileServerHandler := http.FileServer(http.Dir(dirToServe))
-	return &http.Server{Addr: address(), Handler: wrapHandlerWithLogging(fileServerHandler)}
+	return &http.Server{
+		Addr:    fmt.Sprintf(":%d", portToListen),
+		Handler: fileServerHandlerWithLogging(),
+	}
+}
+
+func abs(dir string) (string, error) {
+	if filepath.IsAbs(dir) {
+		return dir, nil
+	}
+	return filepath.Abs(dir)
 }
 
 func run() {
-	dirToServe, err := absPath(dirToServe)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err := os.Stat(dirToServe); err != nil {
-		log.Fatal(err)
-	}
-
 	server := newServer()
-	log.Printf("Serving [%s] on HTTP [%s]\n", dirToServe, address())
+	log.Printf("Serving [%s] on HTTP [%s]\n", dirToServe, server.Addr)
 
-	err = server.ListenAndServe()
+	err := server.ListenAndServe()
 	if err != nil {
 		if isErrorAddressAlreadyInUse(err) {
 			log.Println(err)
@@ -115,5 +101,16 @@ func init() {
 
 func main() {
 	flag.Parse()
+
+	absPath, err := abs(dirToServe)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := os.Stat(absPath); err != nil {
+		log.Fatal(err)
+	}
+
+	dirToServe = absPath
 	run()
 }

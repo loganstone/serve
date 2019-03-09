@@ -3,9 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net"
-	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
@@ -14,21 +12,27 @@ import (
 	"gotest.tools/assert"
 )
 
-func newTestServer() *httptest.Server {
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", portToListen))
+func newTestServer() (*httptest.Server, error) {
+	handler := fileServerHandlerWithLogging()
+	ts := httptest.NewUnstartedServer(handler)
+	err := ts.Listener.Close()
 	if err != nil {
-		log.Fatal(err)
+		return ts, err
 	}
 
-	handler := wrapHandlerWithLogging(http.FileServer(http.Dir(dirToServe)))
-	ts := httptest.NewUnstartedServer(handler)
-	ts.Listener.Close()
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", portToListen))
+	if err != nil {
+		return ts, err
+	}
+
 	ts.Listener = ln
-	return ts
+	return ts, nil
 }
 
-func TestAbsPath(t *testing.T) {
-	actual, err := absPath(".")
+func TestAbs(t *testing.T) {
+	dirToServe = defaultDir
+
+	absPath, err := abs(dirToServe)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,19 +41,25 @@ func TestAbsPath(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	assert.Equal(t, absPath, expected)
 
-	assert.Equal(t, actual, expected)
+	testPath := "/abs/path"
+	_, err = abs(testPath)
+	assert.Assert(t, err == nil)
 }
 
 func TestRunServeAndReqeust(t *testing.T) {
 	dirToServe = defaultDir
 	portToListen = defaultPort
 
-	ts := newTestServer()
+	ts, err := newTestServer()
+	defer ts.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	ts.Start()
 	client := ts.Client()
-	defer ts.Close()
 
 	resp, err := client.Get(ts.URL)
 	if err != nil {
@@ -80,11 +90,14 @@ func TestIsErrorAddressAlreadyInUse(t *testing.T) {
 	dirToServe = defaultDir
 	portToListen = defaultPort
 
-	firstSrv := newTestServer()
-	firstSrv.Start()
+	firstSrv, err := newTestServer()
 	defer firstSrv.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	firstSrv.Start()
 
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", portToListen))
+	secondSrv, err := newTestServer()
+	defer secondSrv.Close()
 	assert.Assert(t, isErrorAddressAlreadyInUse(err))
-	assert.Equal(t, ln, nil)
 }
