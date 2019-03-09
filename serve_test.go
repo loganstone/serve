@@ -12,15 +12,15 @@ import (
 	"gotest.tools/assert"
 )
 
-func newTestServer() (*httptest.Server, error) {
-	handler := fileServerHandlerWithLogging()
+func newTestServer(dir string, port int) (*httptest.Server, error) {
+	handler := fileServerHandlerWithLogging(dir)
 	ts := httptest.NewUnstartedServer(handler)
 	err := ts.Listener.Close()
 	if err != nil {
 		return ts, err
 	}
 
-	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", portToListen))
+	ln, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
 		return ts, err
 	}
@@ -30,8 +30,6 @@ func newTestServer() (*httptest.Server, error) {
 }
 
 func TestAbs(t *testing.T) {
-	dirToServe = defaultDir
-
 	absPath, err := abs(dirToServe)
 	if err != nil {
 		t.Fatal(err)
@@ -49,10 +47,7 @@ func TestAbs(t *testing.T) {
 }
 
 func TestRunServeAndReqeust(t *testing.T) {
-	dirToServe = defaultDir
-	portToListen = defaultPort
-
-	ts, err := newTestServer()
+	ts, err := newTestServer(dirToServe, portToListen)
 	defer ts.Close()
 	if err != nil {
 		t.Fatal(err)
@@ -87,17 +82,14 @@ func TestRunServeAndReqeust(t *testing.T) {
 }
 
 func TestIsErrorAddressAlreadyInUse(t *testing.T) {
-	dirToServe = defaultDir
-	portToListen = defaultPort
-
-	firstSrv, err := newTestServer()
+	firstSrv, err := newTestServer(dirToServe, portToListen)
 	defer firstSrv.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
 	firstSrv.Start()
 
-	secondSrv, err := newTestServer()
+	secondSrv, err := newTestServer(dirToServe, portToListen)
 	defer secondSrv.Close()
 	assert.Assert(t, isErrorAddressAlreadyInUse(err))
 }

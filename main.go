@@ -51,8 +51,8 @@ func isErrorAddressAlreadyInUse(err error) bool {
 	return false
 }
 
-func fileServerHandlerWithLogging() http.Handler {
-	fileServerHandler := http.FileServer(http.Dir(dirToServe))
+func fileServerHandlerWithLogging(dir string) http.Handler {
+	fileServerHandler := http.FileServer(http.Dir(dir))
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("-> %s %s %s\n", r.RemoteAddr, r.Method, r.URL)
@@ -64,10 +64,10 @@ func fileServerHandlerWithLogging() http.Handler {
 	})
 }
 
-func newServer() *http.Server {
+func newServer(dir string, port int) *http.Server {
 	return &http.Server{
-		Addr:    fmt.Sprintf(":%d", portToListen),
-		Handler: fileServerHandlerWithLogging(),
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: fileServerHandlerWithLogging(dir),
 	}
 }
 
@@ -78,17 +78,16 @@ func abs(dir string) (string, error) {
 	return filepath.Abs(dir)
 }
 
-func run() {
-	server := newServer()
-	log.Printf("Serving [%s] on HTTP [%s]\n", dirToServe, server.Addr)
+func runServer(dir string, port int) {
+	server := newServer(dir, port)
+	log.Printf("Serving [%s] on HTTP [%s]\n", dir, server.Addr)
 
 	err := server.ListenAndServe()
 	if err != nil {
 		if isErrorAddressAlreadyInUse(err) {
 			log.Println(err)
-			portToListen++
-			log.Printf("Change port: [%d]\n", portToListen)
-			run()
+			log.Printf("Change port: [%d]\n", port+1)
+			runServer(dir, port+1)
 		}
 		log.Fatal(err)
 	}
@@ -116,6 +115,5 @@ func main() {
 		log.Fatal("-d option value must be directory")
 	}
 
-	dirToServe = absPath
-	run()
+	runServer(absPath, portToListen)
 }
