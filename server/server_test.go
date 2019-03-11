@@ -1,15 +1,20 @@
-package main
+package server
 
 import (
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
 	"gotest.tools/assert"
+)
+
+var (
+	dirToServe   = "."
+	portToListen = 9000
 )
 
 func newTestServer(dir string, port int) (*httptest.Server, error) {
@@ -27,23 +32,6 @@ func newTestServer(dir string, port int) (*httptest.Server, error) {
 
 	ts.Listener = ln
 	return ts, nil
-}
-
-func TestAbs(t *testing.T) {
-	absPath, err := abs(dirToServe)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expected, err := os.Getwd()
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, absPath, expected)
-
-	testPath := "/abs/path"
-	_, err = abs(testPath)
-	assert.Assert(t, err == nil)
 }
 
 func TestRunServeAndReqeust(t *testing.T) {
@@ -92,4 +80,7 @@ func TestIsErrorAddressAlreadyInUse(t *testing.T) {
 	secondSrv, err := newTestServer(dirToServe, portToListen)
 	defer secondSrv.Close()
 	assert.Assert(t, isErrorAddressAlreadyInUse(err))
+
+	err = errors.New("some error")
+	assert.Assert(t, !isErrorAddressAlreadyInUse(err))
 }
