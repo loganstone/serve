@@ -86,3 +86,23 @@ func TestIsErrorAddressAlreadyInUse(t *testing.T) {
 	err = errors.New("some error")
 	assert.Assert(t, !isErrorAddressAlreadyInUse(err))
 }
+
+func TestIsPortInUse(t *testing.T) {
+	assert.Assert(t, false == IsPortInUse(conf.DefaultPort))
+
+	ts, err := newTestServer(conf.DefaultDir, conf.DefaultPort)
+	defer ts.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ts.Start()
+	assert.Assert(t, true == IsPortInUse(conf.DefaultPort))
+}
+
+func TestFreePort(t *testing.T) {
+	port, err := FreePort()
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Assert(t, false == IsPortInUse(port))
+}

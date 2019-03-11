@@ -32,5 +32,15 @@ func main() {
 		log.Fatal("-d option value must be directory")
 	}
 
+	if server.IsPortInUse(*portToListen) {
+		freePort, err := server.FreePort()
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("[%d] port already in use\n", *portToListen)
+		log.Printf("Change port: [%d]\n", freePort)
+		*portToListen = freePort
+	}
+
 	server.Run(absPath, *portToListen)
 }

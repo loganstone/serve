@@ -8,6 +8,7 @@ import (
 	"os"
 	"runtime"
 	"syscall"
+	"time"
 )
 
 func isErrorAddressAlreadyInUse(err error) bool {
@@ -40,6 +41,39 @@ func newServer(dir string, port int) *http.Server {
 	}
 }
 
+// IsPortInUse ...
+func IsPortInUse(port int) bool {
+	host := fmt.Sprintf(":%d", port)
+	timeoutSecs := 5
+	conn, err := net.DialTimeout(
+		"tcp", host, time.Duration(timeoutSecs)*time.Second)
+
+	if conn != nil {
+		defer conn.Close()
+	}
+
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+// FreePort ...
+func FreePort() (int, error) {
+	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return 0, err
+	}
+
+	l, err := net.ListenTCP("tcp", addr)
+	if err != nil {
+		return 0, err
+	}
+	defer l.Close()
+	return l.Addr().(*net.TCPAddr).Port, nil
+}
+
 // Run ...
 func Run(dir string, port int) {
 	srv := newServer(dir, port)
@@ -49,8 +83,12 @@ func Run(dir string, port int) {
 	if err != nil {
 		if isErrorAddressAlreadyInUse(err) {
 			log.Println(err)
-			log.Printf("Change port: [%d]\n", port+1)
-			Run(dir, port+1)
+			freePort, err := FreePort()
+			if err != nil {
+				log.Fatal(err)
+			}
+			log.Printf("Change port: [%d]\n", freePort)
+			Run(dir, freePort)
 		}
 		log.Fatal(err)
 	}
