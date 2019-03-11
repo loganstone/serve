@@ -5,18 +5,14 @@ import (
 	"log"
 	"os"
 
+	"github.com/loganstone/serve/conf"
 	"github.com/loganstone/serve/dir"
 	"github.com/loganstone/serve/server"
 )
 
-const (
-	defaultDir  = "."
-	defaultPort = 9000
-)
-
 var (
-	dirToServe   = flag.String("d", defaultDir, "directory to serve")
-	portToListen = flag.Int("p", defaultPort, "port to listen on")
+	dirToServe   = flag.String("d", conf.DefaultDir, "directory to serve")
+	portToListen = flag.Int("p", conf.DefaultPort, "port to listen on")
 )
 
 func main() {

@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"gotest.tools/assert"
+
+	"github.com/loganstone/serve/conf"
 )
 
 var (
@@ -35,7 +37,7 @@ func newTestServer(dir string, port int) (*httptest.Server, error) {
 }
 
 func TestRunServeAndReqeust(t *testing.T) {
-	ts, err := newTestServer(dirToServe, portToListen)
+	ts, err := newTestServer(conf.DefaultDir, conf.DefaultPort)
 	defer ts.Close()
 	if err != nil {
 		t.Fatal(err)
@@ -70,14 +72,14 @@ func TestRunServeAndReqeust(t *testing.T) {
 }
 
 func TestIsErrorAddressAlreadyInUse(t *testing.T) {
-	firstSrv, err := newTestServer(dirToServe, portToListen)
+	firstSrv, err := newTestServer(conf.DefaultDir, conf.DefaultPort)
 	defer firstSrv.Close()
 	if err != nil {
 		t.Fatal(err)
 	}
 	firstSrv.Start()
 
-	secondSrv, err := newTestServer(dirToServe, portToListen)
+	secondSrv, err := newTestServer(conf.DefaultDir, conf.DefaultPort)
 	defer secondSrv.Close()
 	assert.Assert(t, isErrorAddressAlreadyInUse(err))
 
