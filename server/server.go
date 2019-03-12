@@ -49,10 +49,15 @@ func (ln tcpKeepAliveListener) Accept() (net.Conn, error) {
 	return tc, nil
 }
 
-func newServer(dir string, port int) *http.Server {
+func newServer(dir string, port int, logging bool) *http.Server {
+	handler := fileServerHandlerWithLogging(dir)
+	if !logging {
+		handler = http.FileServer(http.Dir(dir))
+	}
+
 	return &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: fileServerHandlerWithLogging(dir),
+		Handler: handler,
 	}
 }
 
@@ -68,7 +73,7 @@ func Listener(port int) (net.Listener, error) {
 
 // Run ...
 func Run(dir string, ln net.Listener) {
-	srv := newServer(dir, ln.Addr().(*net.TCPAddr).Port)
+	srv := newServer(dir, ln.Addr().(*net.TCPAddr).Port, true)
 	log.Printf("Serving [%s] on HTTP [%s]\n", dir, srv.Addr)
 
 	defer ln.Close()
