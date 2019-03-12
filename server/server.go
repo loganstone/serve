@@ -11,7 +11,8 @@ import (
 	"time"
 )
 
-func isErrorAddressAlreadyInUse(err error) bool {
+// IsErrorAddressAlreadyInUse ...
+func IsErrorAddressAlreadyInUse(err error) bool {
 	errOpError, ok := err.(*net.OpError)
 	if !ok {
 		return false
@@ -34,6 +35,20 @@ func isErrorAddressAlreadyInUse(err error) bool {
 	return false
 }
 
+type tcpKeepAliveListener struct {
+	*net.TCPListener
+}
+
+func (ln tcpKeepAliveListener) Accept() (net.Conn, error) {
+	tc, err := ln.AcceptTCP()
+	if err != nil {
+		return nil, err
+	}
+	tc.SetKeepAlive(true)
+	tc.SetKeepAlivePeriod(3 * time.Minute)
+	return tc, nil
+}
+
 func newServer(dir string, port int) *http.Server {
 	return &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
@@ -41,55 +56,21 @@ func newServer(dir string, port int) *http.Server {
 	}
 }
 
-// IsPortInUse ...
-func IsPortInUse(port int) bool {
-	host := fmt.Sprintf(":%d", port)
-	timeoutSecs := 5
-	conn, err := net.DialTimeout(
-		"tcp", host, time.Duration(timeoutSecs)*time.Second)
-
-	if conn != nil {
-		defer conn.Close()
-	}
-
+// Listener ...
+func Listener(port int) (net.Listener, error) {
+	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
-		return false
+		return nil, err
 	}
 
-	return true
-}
-
-// FreePort ...
-func FreePort() (int, error) {
-	addr, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		return 0, err
-	}
-
-	l, err := net.ListenTCP("tcp", addr)
-	if err != nil {
-		return 0, err
-	}
-	defer l.Close()
-	return l.Addr().(*net.TCPAddr).Port, nil
+	return net.ListenTCP("tcp", addr)
 }
 
 // Run ...
-func Run(dir string, port int) {
-	srv := newServer(dir, port)
+func Run(dir string, ln net.Listener) {
+	srv := newServer(dir, ln.Addr().(*net.TCPAddr).Port)
 	log.Printf("Serving [%s] on HTTP [%s]\n", dir, srv.Addr)
 
-	err := srv.ListenAndServe()
-	if err != nil {
-		if isErrorAddressAlreadyInUse(err) {
-			log.Println(err)
-			freePort, err := FreePort()
-			if err != nil {
-				log.Fatal(err)
-			}
-			log.Printf("Change port: [%d]\n", freePort)
-			Run(dir, freePort)
-		}
-		log.Fatal(err)
-	}
+	defer ln.Close()
+	log.Fatal(srv.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)}))
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"log"
+	"net"
 	"os"
 
 	"github.com/loganstone/serve/conf"
@@ -32,15 +33,15 @@ func main() {
 		log.Fatal("-d option value must be directory")
 	}
 
-	if server.IsPortInUse(*portToListen) {
-		freePort, err := server.FreePort()
+	ln, err := server.Listener(*portToListen)
+	if server.IsErrorAddressAlreadyInUse(err) {
+		log.Println(err)
+		ln, err = server.Listener(0)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("[%d] port already in use\n", *portToListen)
-		log.Printf("Change port: [%d]\n", freePort)
-		*portToListen = freePort
+		log.Printf("Change port: [%d]\n", ln.Addr().(*net.TCPAddr).Port)
 	}
 
-	server.Run(absPath, *portToListen)
+	server.Run(absPath, ln)
 }
