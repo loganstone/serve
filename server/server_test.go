@@ -2,7 +2,6 @@ package server
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -25,7 +24,7 @@ func TestRunServeAndReqeust(t *testing.T) {
 	go func() {
 		retry := 0
 		for {
-			resp, err := http.Get(fmt.Sprintf("http://0.0.0.0%s", srv.Addr))
+			resp, err := http.Get("http://" + ln.Addr().String())
 			if err != nil {
 				if retry > 4 {
 					t.Fatal(err)
