@@ -5,10 +5,9 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"strings"
 	"testing"
 
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/loganstone/serve/conf"
 )
@@ -50,7 +49,7 @@ func TestRunServeAndReqeust(t *testing.T) {
 
 			for _, f := range files {
 				expected := f.Name()
-				assert.Assert(t, strings.Contains(actual, expected))
+				assert.Contains(t, actual, expected)
 			}
 			defer resp.Body.Close()
 			defer ln.Close()
@@ -73,8 +72,8 @@ func TestIsErrorAddressAlreadyInUse(t *testing.T) {
 	}
 	secondLn, err := Listener(conf.DefaultPort)
 	defer secondLn.Close()
-	assert.Assert(t, IsErrorAddressAlreadyInUse(err))
+	assert.True(t, IsErrorAddressAlreadyInUse(err))
 
 	err = errors.New("some error")
-	assert.Assert(t, !IsErrorAddressAlreadyInUse(err))
+	assert.False(t, IsErrorAddressAlreadyInUse(err))
 }

@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"gotest.tools/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAbs(t *testing.T) {
@@ -21,5 +21,5 @@ func TestAbs(t *testing.T) {
 
 	testPath := "/abs/path"
 	_, err = Abs(testPath)
-	assert.Assert(t, err == nil)
+	assert.Nil(t, err)
 }
