@@ -33,6 +33,25 @@ func main() {
 		log.Fatal("-d option value must be directory")
 	}
 
+	watcher, err := dir.NewWatcher(absPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer watcher.Close()
+
+	go func() {
+		log.Printf("verified directory [%s], and now my watch begins", absPath)
+		for {
+			select {
+			case event := <-watcher.Events:
+				log.Printf("Watcher - %s\n", event)
+
+			case err := <-watcher.Errors:
+				log.Println("Watcher ERROR!", err)
+			}
+		}
+	}()
+
 	ln, err := server.Listener(*portToListen)
 	if server.IsErrorAddressAlreadyInUse(err) {
 		log.Println(err)
