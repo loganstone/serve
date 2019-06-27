@@ -38,19 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer watcher.Close()
-
-	go func() {
-		log.Printf("verified directory [%s], and now my watch begins", absPath)
-		for {
-			select {
-			case event := <-watcher.Events:
-				log.Printf("Watcher - %s\n", event)
-
-			case err := <-watcher.Errors:
-				log.Println("Watcher ERROR!", err)
-			}
-		}
-	}()
+	go dir.NowMyWatchBegins(absPath, watcher)
 
 	ln, err := server.Listener(*portToListen)
 	if server.IsErrorAddressAlreadyInUse(err) {

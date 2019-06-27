@@ -1,6 +1,7 @@
 package dir
 
 import (
+	"log"
 	"path/filepath"
 
 	"github.com/fsnotify/fsnotify"
@@ -14,7 +15,7 @@ func Abs(dir string) (string, error) {
 	return filepath.Abs(dir)
 }
 
-// NewWatcher ...
+// NewWatcher .
 func NewWatcher(dir string) (*fsnotify.Watcher, error) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -26,4 +27,18 @@ func NewWatcher(dir string) (*fsnotify.Watcher, error) {
 	}
 
 	return watcher, nil
+}
+
+// NowMyWatchBegins ...
+func NowMyWatchBegins(dir string, w *fsnotify.Watcher) {
+	log.Printf("verified directory [%s], and now my watch begins", dir)
+	for {
+		select {
+		case event := <-w.Events:
+			log.Printf("Watcher - %s\n", event)
+
+		case err := <-w.Errors:
+			log.Println("Watcher ERROR!", err)
+		}
+	}
 }
