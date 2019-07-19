@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"log"
 	"net"
 	"os"
@@ -11,15 +10,10 @@ import (
 	"github.com/loganstone/serve/server"
 )
 
-var (
-	dirToServe   = flag.String("d", conf.DefaultDir, "directory to serve")
-	portToListen = flag.Int("p", conf.DefaultPort, "port to listen on")
-)
-
 func main() {
-	flag.Parse()
+	opts := conf.Opts()
 
-	absPath, err := dir.Abs(*dirToServe)
+	absPath, err := dir.Abs(opts.DirToServe)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,7 +34,7 @@ func main() {
 	defer watcher.Close()
 	go dir.NowMyWatchBegins(absPath, watcher)
 
-	ln, err := server.Listener(*portToListen)
+	ln, err := server.Listener(opts.PortToListen)
 	if server.IsErrorAddressAlreadyInUse(err) {
 		log.Println(err)
 		ln, err = server.Listener(0)
