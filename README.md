@@ -4,9 +4,11 @@ Alternative to "python -m http.server --bind 0 9000"
 
 ## Getting started
 
-### Install
+### Prerequisites
 
-* Install golang ;)
+* [Install golang](https://golang.org/doc/install) ;)
+
+### Install and run
 
 * Install `serve`
 
