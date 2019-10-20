@@ -1,4 +1,4 @@
-# serve
+# Serve
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/loganstone/serve)](https://goreportcard.com/report/github.com/loganstone/serve)
 
