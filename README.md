@@ -1,5 +1,7 @@
 # serve
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/loganstone/serve)](https://goreportcard.com/report/github.com/loganstone/serve)
+
 Alternative to "python -m http.server --bind 0 9000"
 
 ## Getting started
