@@ -21,5 +21,5 @@ func TestAbs(t *testing.T) {
 
 	testPath := "/abs/path"
 	_, err = Abs(testPath)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
