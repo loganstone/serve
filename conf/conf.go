@@ -20,10 +20,10 @@ var opts Options
 func init() {
 	flag.StringVar(&opts.DirToServe, "d", DefaultDir, "Directory to serve")
 	flag.IntVar(&opts.PortToListen, "p", DefaultPort, "Port to listen on")
-	flag.Parse()
 }
 
 // Opts 'init' 에서 처리 된 -d, -p 값을 담은 type 을 반환하다.
 func Opts() Options {
+	flag.Parse()
 	return opts
 }
