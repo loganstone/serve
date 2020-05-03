@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// IsErrorAddressAlreadyInUse ...
+// IsErrorAddressAlreadyInUse .
 func IsErrorAddressAlreadyInUse(err error) bool {
 	errOpError, ok := err.(*net.OpError)
 	if !ok {
@@ -61,7 +61,7 @@ func newServer(dir string, port int, logging bool) *http.Server {
 	}
 }
 
-// Listener ...
+// Listener .
 func Listener(port int) (net.Listener, error) {
 	addr, err := net.ResolveTCPAddr("tcp", fmt.Sprintf(":%d", port))
 	if err != nil {
@@ -71,7 +71,7 @@ func Listener(port int) (net.Listener, error) {
 	return net.ListenTCP("tcp", addr)
 }
 
-// Run ...
+// Run .
 func Run(dir string, ln net.Listener) {
 	srv := newServer(dir, ln.Addr().(*net.TCPAddr).Port, true)
 	log.Printf("Serving [%s] on HTTP [%s]\n", dir, srv.Addr)

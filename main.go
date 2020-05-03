@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"net"
-	"os"
 
 	"github.com/loganstone/serve/conf"
 	"github.com/loganstone/serve/dir"
@@ -13,26 +12,12 @@ import (
 func main() {
 	opts := conf.Opts()
 
-	absPath, err := dir.Abs(opts.DirToServe)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	dirInfo, err := os.Stat(absPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if !dirInfo.IsDir() {
-		log.Fatal("-d option value must be directory")
-	}
-
-	watcher, err := dir.NewWatcher(absPath)
+	watcher, err := dir.NewWatcher(opts.DirToServe)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer watcher.Close()
-	go dir.NowMyWatchBegins(absPath, watcher)
+	go watcher.NowMyWatchBegins()
 
 	ln, err := server.Listener(opts.PortToListen)
 	if server.IsErrorAddressAlreadyInUse(err) {
@@ -44,5 +29,5 @@ func main() {
 		log.Printf("Change port: [%d]\n", ln.Addr().(*net.TCPAddr).Port)
 	}
 
-	server.Run(absPath, ln)
+	server.Run(watcher.VerifiedDir, ln)
 }
