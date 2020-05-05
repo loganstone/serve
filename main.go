@@ -29,9 +29,10 @@ func main() {
 		// port 자동할당
 		ln, err = server.Listener(0)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
+			log.Fatal("failed port auto-assignment")
 		}
-		log.Printf("Change port: [%d]\n", ln.Addr().(*net.TCPAddr).Port)
+		log.Printf("change port: [%d]\n", ln.Addr().(*net.TCPAddr).Port)
 	}
 
 	server.Run(watcher.VerifiedDir, ln)

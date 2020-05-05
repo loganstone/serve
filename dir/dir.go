@@ -56,10 +56,10 @@ func (w *Watcher) NowMyWatchBegins() {
 	for {
 		select {
 		case event := <-w.Events:
-			log.Printf("Watcher - %s\n", event)
+			log.Printf("watcher - %s\n", event)
 
 		case err := <-w.Errors:
-			log.Println("Watcher ERROR!", err)
+			log.Println("watcher ERROR!", err)
 		}
 	}
 }

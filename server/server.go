@@ -74,7 +74,7 @@ func Listener(port int) (net.Listener, error) {
 // Run .
 func Run(dir string, ln net.Listener) {
 	srv := newServer(dir, ln.Addr().(*net.TCPAddr).Port, true)
-	log.Printf("Serving [%s] on HTTP [%s]\n", dir, srv.Addr)
+	log.Printf("serving [%s] on HTTP [%s]\n", dir, srv.Addr)
 
 	defer ln.Close()
 	log.Fatal(srv.Serve(tcpKeepAliveListener{ln.(*net.TCPListener)}))
