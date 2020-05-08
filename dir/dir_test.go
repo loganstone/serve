@@ -27,4 +27,7 @@ func TestNewWatcher(t *testing.T) {
 
 	_, err = NewWatcher("bad_dir")
 	assert.Error(t, errors.New("lstat bad_dir: no such file or directory"), err)
+
+	_, err = NewWatcher("./dir.go")
+	assert.Error(t, errors.New("-d option value must be directory"), err)
 }
