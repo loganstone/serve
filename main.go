@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net"
 
@@ -11,6 +12,11 @@ import (
 
 func main() {
 	opts := conf.Opts()
+
+	if opts.DirToServe == "" {
+		flag.PrintDefaults()
+		return
+	}
 
 	watcher, err := dir.NewWatcher(opts.DirToServe)
 	if err != nil {
