@@ -52,7 +52,7 @@ func TestRequest(t *testing.T) {
 		}
 
 		if resp.StatusCode != 200 {
-			t.Fatalf("received non-200 response: %d\n", resp.StatusCode)
+			t.Fatalf("received non-200 response code: %d\n", resp.StatusCode)
 		}
 
 		body, err := ioutil.ReadAll(resp.Body)
