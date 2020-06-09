@@ -31,7 +31,7 @@ func main() {
 	// 실행 사이의 시간에 다른 process 에서 port 를 점유할 수 있어,
 	// 에러가 발생하기는 마찬가지이고, 코드가 더 복잡해진다.
 	ln, err := server.Listener(opts.PortToListen)
-	if server.IsErrorAddressAlreadyInUse(err) {
+	if server.IsErrorAlreadyInUse(err) {
 		log.Println(err)
 		// port 자동할당
 		ln, err = server.Listener(0)

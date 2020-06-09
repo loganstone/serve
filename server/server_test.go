@@ -75,11 +75,11 @@ func TestRequest(t *testing.T) {
 	}
 }
 
-func TestIsErrorAddressAlreadyInUse(t *testing.T) {
+func TestIsErrorAlreadyInUse(t *testing.T) {
 	ln, err := Listener(conf.DefaultPort)
 	defer ln.Close()
-	assert.True(t, IsErrorAddressAlreadyInUse(err))
+	assert.True(t, IsErrorAlreadyInUse(err))
 
 	err = errors.New("some error")
-	assert.False(t, IsErrorAddressAlreadyInUse(err))
+	assert.False(t, IsErrorAlreadyInUse(err))
 }

@@ -11,8 +11,8 @@ import (
 	"time"
 )
 
-// IsErrorAddressAlreadyInUse .
-func IsErrorAddressAlreadyInUse(err error) bool {
+// IsErrorAlreadyInUse .
+func IsErrorAlreadyInUse(err error) bool {
 	errOpError, ok := err.(*net.OpError)
 	if !ok {
 		return false
