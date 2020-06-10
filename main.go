@@ -39,7 +39,8 @@ func main() {
 			log.Println(err)
 			log.Fatal("failed port auto-assignment")
 		}
-		log.Printf("change port: [%d]\n", ln.Addr().(*net.TCPAddr).Port)
+		message := "port [%d] is already in use. change port to : [%d]\n"
+		log.Printf(message, opts.PortToListen, ln.Addr().(*net.TCPAddr).Port)
 	}
 
 	server.Run(watcher.VerifiedDir, ln)
