@@ -39,6 +39,12 @@ usage of serve:
     	port to listen on (default 9000)
 ```
 
+## Running Tests
+
+```shell
+$ go test -v -count=1 ./...  # no cached
+```
+
 ## Key Features
 
 - Serving directory to http.
