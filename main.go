@@ -25,11 +25,13 @@ func main() {
 	defer watcher.Close()
 	go watcher.NowMyWatchBegins()
 
-	// Listener port 가 이미 사용되는지 확인은
-	// 생성 시 에러로 확인하는 것이 코드가 명료하고 간단하다.
-	// prot 확인과 생성 코드가 분리되어있다면,
-	// 실행 사이의 시간에 다른 process 에서 port 를 점유할 수 있어,
-	// 에러가 발생하기는 마찬가지이고, 코드가 더 복잡해진다.
+	// 지정된 port 가 이미 점유되었는지 확인은
+	// Listener 생성 시 error 로 확인하도록 한다.
+	// Listener 생성 전 port 점유 확인 코드가 있다면
+	// 코드만 복잡하고, 아래와 같은 상황에 같은 error 를 발생시킨다.
+	// 1. Port 점유 확인 코드가 실행되어 port 미 점유 확인
+	// 2. 다른 process 에서 port 점유
+	// 3. Listener 생성 코드 실행 시 에러
 	ln, err := server.Listener(opts.PortToListen)
 	if server.IsErrorAlreadyInUse(err) {
 		log.Println(err)
