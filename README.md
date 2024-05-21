@@ -15,7 +15,7 @@ Alternative to "python -m http.server --bind 0 9000"
 * Install `serve`
 
 ```shell
-$ go get github.com/loganstone/serve
+$ go install github.com/loganstone/serve@latest
 ```
 
 * Run
